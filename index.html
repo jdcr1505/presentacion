@@ -3,281 +3,172 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tiempo de venta inmobiliario por zona · Big Data</title>
+<title>¿Cuánto tarda en venderse una vivienda? · Big Data</title>
 <link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/landing.css">
 </head>
-<body class="modo-presentacion">
-
+<body>
 <div id="aviso-datos" class="aviso-datos oculto"></div>
 
-<div id="diapositivas">
+<header id="top"><div>
+  <span class="logo">&gt;_ bigdata.lakehouse</span>
+  <nav id="menu">
+    <a href="#inicio">Inicio</a><a href="#cinco-v">5 V</a><a href="#problema">Problema</a><a href="#medallon">Medallón</a><a href="#gold">Gold</a><a href="#modelo">Modelo</a><a href="#confianza">Confianza</a><a href="#probabilidad">Probabilidad</a><a href="#produccion">Producción</a><a href="#cierre">Cierre</a>
+  </nav>
+</div><div id="progreso"><i></i></div></header>
 
-<!-- 1. PORTADA -->
-<section class="slide portada" data-titulo="Portada" data-seg="">
-  <p class="etq">Big Data · Proyecto final · Arquitectura Medallón</p>
-  <h1>¿Cuánto tarda en venderse una vivienda en tu zona?</h1>
-  <p class="sub">Predicción del tiempo de venta por código postal con PySpark y Databricks, y un simulador para consultarla.</p>
-  <div class="equipo">
-    <span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span>
+<main id="diapositivas">
+
+<section class="sec hero" id="inicio">
+  <canvas id="lluvia"></canvas>
+  <p class="etq">Big Data · Proyecto final · Arquitectura Medallón · PySpark + Databricks</p>
+  <h1>¿Cuánto tarda en venderse <em>una vivienda</em> en tu zona?</h1>
+  <p class="sub">Procesamos más de un millón de registros del mercado inmobiliario de EE. UU., los refinamos en un pipeline distribuido y los convertimos en un simulador de probabilidad por código postal.</p>
+  <div class="term">
+    <span class="g">$ spark-submit pipeline_medallon.py</span><br>
+    <span class="p">✔</span> filas ingeridas en Bronze<b id="ingesta">0</b>
+    <span class="g"><span data-k="meta.zips_distintos" data-f="int"></span> códigos postales · <span data-k="capas.gold.variables" data-f="int"></span> variables en Gold</span>
   </div>
+  <a class="cta" href="#cinco-v">Bajar al pipeline ↓</a>
+  <div class="equipo" style="margin-top:2rem"><span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span></div>
   <p class="meta-pie">Sustentación final · 28 de noviembre de 2026</p>
 </section>
 
-<!-- 2. PROBLEMA Y OBJETIVO -->
-<section class="slide" data-titulo="Problema y objetivo" data-seg="1 · Definición y alcance · ~3 min">
+<section class="sec" id="cinco-v">
+  <p class="n">// 01 · POR QUÉ ES BIG DATA</p>
+  <h2>Las 5 V de este proyecto</h2>
+  <div class="cols c5 vs">
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.filas" data-f="int"></span></big><b>Volumen</b><p>filas de ventanas móviles por zona y mes. Demasiado para una hoja de cálculo; hecho para Spark.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.columnas" data-f="int"></span> cols</big><b>Variedad</b><p>CSV crudo con textos, fechas, precios, inventarios y marcas de «sin dato» que hay que tipar.</p></div>
+    <div class="card v rev"><span class="l">V</span><big>Mensual</big><b>Velocidad</b><p>Cada mes llega una carga nueva de Redfin y el pipeline se vuelve a ejecutar completo.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.silver.banderas.flag_objetivo_extremo" data-f="int"></span></big><b>Veracidad</b><p>filas con tiempos extremos: se marcan con banderas, no se borran.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="predicciones.n" data-f="int"></span></big><b>Valor</b><p>zonas con predicción lista para consultar en el simulador.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="problema">
+  <p class="n">// 02 · DEFINICIÓN Y ALCANCE</p>
   <h2>Un plazo de venta fijado a ciegas</h2>
   <div class="cols c2">
-    <div class="card"><h3>Problema</h3><p>Quien quiere vender una vivienda suele fijar su expectativa de plazo sin referencias objetivas: no sabe si en su zona lo normal es vender en 30 o en 90 días.</p></div>
-    <div class="card"><h3>Objetivo</h3><p>Estimar cuántos días tarda típicamente en venderse una vivienda en un código postal, y con qué probabilidad se cumple un plazo dado.</p></div>
-    <div class="card"><h3>Unidad de análisis</h3><p>Un <b>código postal</b> en una <b>ventana móvil de 3 meses</b>. No es una propiedad individual: el dato disponible es un resumen por zona.</p></div>
-    <div class="card"><h3>Resultado esperado</h3><p>Un simulador tipo PropTech: el usuario ingresa su zona y recibe el tiempo típico de venta, un rango y una probabilidad.</p></div>
+    <div class="card rev"><h3>Problema</h3><p>Quien quiere vender una vivienda fija su expectativa sin referencias objetivas: no sabe si en su zona lo normal es vender en 30 o en 90 días.</p></div>
+    <div class="card rev"><h3>Objetivo</h3><p>Estimar cuántos días tarda típicamente en venderse una vivienda en un código postal y con qué probabilidad se cumple un plazo dado.</p></div>
+    <div class="card rev"><h3>Unidad de análisis</h3><p>Un <b>código postal</b> en una <b>ventana móvil de 3 meses</b>. No es una propiedad individual: el dato es un resumen por zona.</p></div>
+    <div class="card rev"><h3>Dataset</h3><p>Redfin Housing Market por ZIP, <span data-k="der.periodo_txt"></span>. Variable objetivo: mediana de días en el mercado.</p></div>
   </div>
-  <div class="franja"><b>Decisión del proyecto:</b> pasamos de predecir el precio a predecir el plazo de venta. El precio depende de la volatilidad del mercado y de muchos factores externos; el plazo es un objetivo más acotado.</div>
+  <div class="franja rev" style="margin-top:1.2rem"><b>Decisión del proyecto:</b> pasamos de predecir el precio, muy volátil, a predecir el plazo de venta, un objetivo más acotado.</div>
 </section>
 
-<!-- 3. DATASET -->
-<section class="slide" data-titulo="Dataset y fuente" data-seg="1 · Definición y alcance · ~3 min">
-  <h2>Dataset: Redfin Housing Market, por código postal</h2>
-  <div class="cols c2 alinear">
-    <div>
-      <div class="cols c2 kpis">
-        <div class="kpi"><b data-k="capas.bronze.filas" data-f="int"></b><small>filas</small></div>
-        <div class="kpi"><b data-k="meta.zips_distintos" data-f="int"></b><small>códigos postales</small></div>
-        <div class="kpi"><b data-k="der.cols_orig" data-f="int"></b><small>columnas originales</small></div>
-        <div class="kpi kpi-txt"><b data-k="der.periodo_txt"></b><small>periodo de los datos</small></div>
-      </div>
-      <ul class="lista">
-        <li><b>Fuente:</b> Redfin, datos del mercado de vivienda (archivo CSV mensual por código postal).</li>
-        <li><b>Variables de mercado:</b> ventas, precios, inventario, nuevos anuncios, ventas pendientes, meses de inventario.</li>
-        <li><b>Variable objetivo:</b> mediana de días en el mercado.</li>
-        <li><b>Por qué lo elegimos:</b> datos reales y recientes, con retos reales de ingeniería de datos: faltantes, valores extremos y ventanas móviles que se solapan.</li>
-      </ul>
-    </div>
-    <div class="card grafico"><h3>Datos faltantes por variable (%)</h3><div data-chart="nulos"></div></div>
+<section class="sec" id="medallon">
+  <p class="n">// 03 · ARQUITECTURA MEDALLÓN</p>
+  <h2>Del CSV al simulador, capa por capa</h2>
+  <div class="pipe rev">
+    <div><i></i><b>CSV</b><small>fuente Redfin</small></div>
+    <div><i></i><b data-k="capas.bronze.filas" data-f="int"></b><small>Bronze</small></div>
+    <div><i></i><b data-k="capas.silver.filas" data-f="int"></b><small>Silver</small></div>
+    <div><i></i><b data-k="capas.gold.filas" data-f="int"></b><small>Gold</small></div>
+    <div><i></i><b data-k="predicciones.n" data-f="int"></b><small>predicciones</small></div>
   </div>
-</section>
+  <div class="cols c3" style="margin-bottom:2.4rem">
+    <div class="card rev"><h3>ELT</h3><p>Primero se carga el dato tal cual y luego se transforma con el cómputo distribuido de Databricks.</p></div>
+    <div class="card rev"><h3>Reconstruible</h3><p>Si se pierden Silver y Gold, se recalculan desde Bronze. Lo comprobamos reconstruyendo Gold desde cero.</p></div>
+    <div class="card rev"><h3>Una capa, un propósito</h3><p>Bronze conserva, Silver da confianza y Gold sirve al modelo.</p></div>
+  </div>
 
-<!-- 4. ARQUITECTURA MEDALLÓN -->
-<section class="slide" data-titulo="Arquitectura Medallón" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2>Del archivo original al simulador</h2>
-  <div class="flujo">
-    <div class="nodo fuente"><h3>Fuente</h3><b>CSV Redfin</b><p>Archivo original, sin tocar</p></div>
-    <span class="flecha">→</span>
-    <div class="nodo bronze"><h3>Bronze</h3><b data-k="capas.bronze.filas" data-f="int"></b><small>filas</small><p>Copia fiel + trazabilidad</p></div>
-    <span class="flecha">→</span>
-    <div class="nodo silver"><h3>Silver</h3><b data-k="capas.silver.filas" data-f="int"></b><small>filas</small><p>Tipos correctos y valores raros marcados</p></div>
-    <span class="flecha">→</span>
-    <div class="nodo gold"><h3>Gold</h3><b data-k="capas.gold.filas" data-f="int"></b><small>filas</small><p>Tabla hecha para el modelo</p></div>
-    <span class="flecha">→</span>
-    <div class="nodo modelo"><h3>Modelo</h3><b>Regresión lineal</b><p>Días típicos de venta</p></div>
-    <span class="flecha">→</span>
-    <div class="nodo simu"><h3>Simulador</h3><b data-k="predicciones.n" data-f="int"></b><small>zonas con predicción</small><p>Probabilidad por plazo</p></div>
+  <div class="capa bz rev">
+    <div><h3><span class="insignia bronze">Bronze</span> Conservar el dato tal como llegó</h3>
+      <ul class="lista"><li>Todo se lee <b>como texto</b>, sin inferir tipos: nada se pierde ni se altera.</li><li>Nombres de columna normalizados con <b>tabla de mapeo</b>.</li><li>Cada fila guarda archivo de origen, momento de carga y lote.</li><li>Se verifica que el conteo coincide con el del archivo original.</li></ul>
+      <div class="chips-fijos" data-chips="capas.bronze.metadatos" style="margin-top:.8rem"></div></div>
+    <div><div class="evidencia"><small>Evidencia · consulta</small><code>SELECT COUNT(*) FROM bronze_redfin_zip_market</code><span class="big-num" data-k="capas.bronze.filas" data-f="int"></span></div>
+      <ul class="lista tabla" data-lista="capas.bronze.tablas" style="margin-top:.8rem"></ul></div>
   </div>
-  <div class="cols c3">
-    <div class="card"><h3>ELT</h3><p>Primero se carga el dato tal cual y después se transforma, aprovechando el cómputo de Databricks.</p></div>
-    <div class="card"><h3>Reconstruible</h3><p>Si se pierden Silver y Gold, se recalculan desde Bronze. Lo comprobamos reconstruyendo Gold desde cero.</p></div>
-    <div class="card"><h3>Una capa, un propósito</h3><p>Bronze conserva, Silver da confianza y Gold sirve al modelo.</p></div>
+
+  <div class="capa sv rev">
+    <div><h3><span class="insignia silver">Silver</span> Se marca, no se borra</h3>
+      <div class="cols c2 kpis"><div class="kpi"><b data-k="capas.silver.filas_eliminadas" data-f="int"></b><small>filas eliminadas</small></div><div class="kpi"><b data-k="capas.silver.conversiones_fallidas" data-f="int"></b><small>conversiones fallidas</small></div></div>
+      <ul class="lista"><li><b>Tipos:</b> textos a números y fechas de forma segura.</li><li><b>Vacíos:</b> NA, guiones y vacío pasan a nulos reales.</li><li><b>Banderas de calidad</b> para lo sospechoso.</li><li><b>Unicidad:</b> una fila por código postal y periodo.</li></ul></div>
+    <div class="card grafico"><h3>Filas marcadas por las banderas</h3><div data-chart="banderas"></div><h3 style="margin-top:1rem">Datos faltantes (%)</h3><div data-chart="nulos"></div></div>
+  </div>
+
+  <div class="capa sv rev">
+    <div class="card grafico"><h3>Distribución del tiempo de venta (días)</h3><div data-chart="histograma"></div><p class="nota">El 99% está bajo <b data-k="der.p99" data-f="int"></b> días; el máximo llega a <b data-k="der.p999" data-f="int"></b>. Pasar de <b data-k="calidad.umbral_extremo_dias" data-f="int"></b> días se marca como extremo.</p></div>
+    <div class="card grafico"><h3>Ruido según casas vendidas</h3><div data-chart="ventas"></div><p class="nota">Con muy pocas ventas la mediana es ruido: una etiqueta es confiable con al menos <b data-k="calidad.min_ventas" data-f="int"></b> ventas.</p></div>
   </div>
 </section>
 
-<!-- 5. BRONZE -->
-<section class="slide capa-bronze" data-titulo="Bronze" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2><span class="insignia bronze">Bronze</span> Conservar el dato tal como llegó</h2>
-  <div class="cols c2 alinear">
-    <div>
-      <div class="cols c3 kpis">
-        <div class="kpi"><b data-k="capas.bronze.filas" data-f="int"></b><small>filas</small></div>
-        <div class="kpi"><b data-k="capas.bronze.columnas" data-f="int"></b><small>columnas</small></div>
-        <div class="kpi"><b data-k="der.n_tablas_bronze" data-f="int"></b><small>tablas</small></div>
-      </div>
-      <h3>Entidades</h3>
-      <ul class="lista tabla" data-lista="capas.bronze.tablas"></ul>
-      <h3>Metadatos de trazabilidad agregados</h3>
-      <div class="chips-fijos" data-chips="capas.bronze.metadatos"></div>
-    </div>
-    <div>
-      <ul class="lista">
-        <li>Se lee todo <b>como texto</b>, sin inferir tipos: no se pierde ni se altera nada.</li>
-        <li>Los nombres de columna se normalizan y se guarda una <b>tabla de mapeo</b> (nombre original → nombre nuevo).</li>
-        <li>Cada fila lleva de qué archivo vino, cuándo se cargó y en qué lote.</li>
-        <li>Se verifica que el conteo coincide con el del archivo original.</li>
-        <li><b>Decisión:</b> no corregir nada en Bronze. Los problemas de calidad se tratan en Silver.</li>
-      </ul>
-      <div class="evidencia"><small>Evidencia · consulta</small><code>SELECT COUNT(*) FROM bronze_redfin_zip_market</code><b data-k="capas.bronze.filas" data-f="int"></b></div>
-    </div>
-  </div>
-</section>
-
-<!-- 6. SILVER -->
-<section class="slide capa-silver" data-titulo="Silver" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2><span class="insignia silver">Silver</span> Datos confiables: se marca, no se borra</h2>
-  <div class="cols c2 alinear">
-    <div>
-      <div class="cols c4 kpis">
-        <div class="kpi"><b data-k="capas.silver.filas" data-f="int"></b><small>filas</small></div>
-        <div class="kpi"><b data-k="capas.silver.columnas" data-f="int"></b><small>columnas</small></div>
-        <div class="kpi"><b data-k="capas.silver.filas_eliminadas" data-f="int"></b><small>filas eliminadas</small></div>
-        <div class="kpi"><b data-k="capas.silver.conversiones_fallidas" data-f="int"></b><small>conversiones fallidas</small></div>
-      </div>
-      <ul class="lista">
-        <li><b>Tipos:</b> textos convertidos a números y fechas, de forma segura.</li>
-        <li><b>Vacíos:</b> las marcas de "sin dato" (NA, guiones, vacío) pasan a nulos reales.</li>
-        <li><b>Banderas de calidad:</b> columnas sí/no que marcan lo sospechoso sin borrar la fila.</li>
-        <li><b>Unicidad:</b> una sola fila por código postal y periodo.</li>
-        <li><b>Resultado:</b> Silver tiene las mismas filas que Bronze; solo sabemos con exactitud qué está raro.</li>
-      </ul>
-    </div>
-    <div class="card grafico"><h3>Filas marcadas por las banderas de calidad</h3><div data-chart="banderas"></div>
-      <p class="nota">Las demás banderas (fechas inválidas, negativos, porcentajes fuera de rango) quedaron en cero.</p></div>
-  </div>
-</section>
-
-<!-- 7. CALIDAD -->
-<section class="slide capa-silver" data-titulo="Decisiones de calidad" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2>Dos umbrales decididos con los datos</h2>
-  <div class="cols c2 alinear">
-    <div class="card grafico"><h3>Filas según el tiempo de venta (días)</h3><div data-chart="histograma"></div>
-      <p class="nota">Altura en raíz cuadrada para que se vean las barras pequeñas. El 99% de los tiempos está bajo <b data-k="der.p99" data-f="int"></b> días; el máximo observado llega a <b data-k="der.p999" data-f="int"></b>. Por eso lo que pasa de <b data-k="calidad.umbral_extremo_dias" data-f="int"></b> días se marca como extremo.</p></div>
-    <div class="card grafico"><h3>Qué tan dispersos son los tiempos según las casas vendidas</h3><div data-chart="ventas"></div>
-      <p class="nota">Con muy pocas ventas, la mediana de una zona es ruido. Por eso una etiqueta es confiable solo con al menos <b data-k="calidad.min_ventas" data-f="int"></b> ventas.</p></div>
-  </div>
-</section>
-
-<!-- 8. GOLD -->
-<section class="slide capa-gold" data-titulo="Gold" data-seg="2 · Arquitectura Medallón · ~7 min">
+<section class="sec" id="gold">
+  <p class="n">// 04 · CAPA GOLD</p>
   <h2><span class="insignia gold">Gold</span> La tabla que el modelo necesita</h2>
-  <div class="cols c3 kpis">
-    <div class="kpi"><b data-k="capas.gold.filas" data-f="int"></b><small>filas</small></div>
-    <div class="kpi"><b data-k="capas.gold.variables" data-f="int"></b><small>variables</small></div>
-    <div class="kpi"><b data-k="predicciones.n" data-f="int"></b><small>zonas con predicción</small></div>
-  </div>
-  <div class="card grafico"><h3>Separación en el tiempo: entrenamiento, embargo y prueba</h3><div data-chart="particiones"></div></div>
-  <div class="cols c2 alinear">
-    <div class="card grafico"><h3>Variables por grupo</h3><div data-chart="grupos"></div></div>
-    <ul class="lista compacta">
-      <li><b>Sin fuga de información:</b> solo se usa lo que se sabía 3 meses o más antes.</li>
-      <li><b>Embargo de 3 meses</b> entre entrenamiento y prueba, para que no compartan meses.</li>
-      <li><b>Etiqueta confiable:</b> tiempo no extremo y al menos 5 ventas.</li>
-      <li><b>Comprobado:</b> variables nuevas recalculadas a mano desde Silver, con el mismo resultado.</li>
-    </ul>
+  <div class="cols c3 kpis rev"><div class="kpi"><b data-k="capas.gold.filas" data-f="int"></b><small>filas</small></div><div class="kpi"><b data-k="capas.gold.variables" data-f="int"></b><small>variables</small></div><div class="kpi"><b data-k="predicciones.n" data-f="int"></b><small>zonas con predicción</small></div></div>
+  <div class="card grafico rev"><h3>Separación en el tiempo: entrenamiento, embargo y prueba</h3><div data-chart="particiones"></div></div>
+  <div class="cols c2 alinear" style="margin-top:1.2rem">
+    <div class="card grafico rev"><h3>Variables por grupo</h3><div data-chart="grupos"></div></div>
+    <ul class="lista compacta rev"><li><b>Sin fuga de información:</b> solo se usa lo que se sabía 3 meses o más antes.</li><li><b>Embargo de 3 meses</b> entre entrenamiento y prueba.</li><li><b>Etiqueta confiable:</b> tiempo no extremo y al menos 5 ventas.</li><li><b>Comprobado:</b> variables nuevas recalculadas a mano desde Silver con el mismo resultado.</li></ul>
   </div>
 </section>
 
-<!-- 9. RESULTADOS -->
-<section class="slide" data-titulo="Resultados del modelo" data-seg="2 · Arquitectura Medallón · ~7 min">
+<section class="sec" id="modelo">
+  <p class="n">// 05 · MODELADO</p>
   <h2>El modelo supera a las referencias simples</h2>
   <div class="cols c2 alinear">
-    <div>
-      <div class="cols c2 kpis">
-        <div class="kpi"><b><span data-k="der.lineal.mae" data-f="d1"></span> días</b><small><span data-k="der.lineal.mae_meses" data-f="d2"></span> meses de error promedio</small></div>
-        <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d1"></span>%</b><small>menos error que la mejor referencia simple</small></div>
-        <div class="kpi"><b data-k="der.lineal.r2" data-f="d2"></b><small>R² (parte de las diferencias entre zonas que explica)</small></div>
-        <div class="kpi"><b><span data-k="der.lineal.wape" data-f="pct100"></span></b><small>error relativo al tiempo real</small></div>
-      </div>
-      <p class="nota">Versión 4 → versión 5: el error baja de <b data-k="modelo.v4.mae_dias" data-f="d1"></b> a <b data-k="modelo.v5.mae_dias" data-f="d1"></b> días (<span data-k="der.mejora_v4_pct" data-f="d1"></span>%) con las variables nuevas.</p>
-    </div>
-    <div class="card grafico"><h3>Error promedio en la prueba (días, menor es mejor)</h3><div data-chart="resultados"></div></div>
+    <div><div class="cols c2 kpis rev">
+      <div class="kpi"><b><span data-k="der.lineal.mae" data-f="d1"></span> días</b><small><span data-k="der.lineal.mae_meses" data-f="d2"></span> meses de error promedio</small></div>
+      <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d1"></span>%</b><small>menos error que la mejor referencia</small></div>
+      <div class="kpi"><b data-k="der.lineal.r2" data-f="d2"></b><small>R² entre zonas</small></div>
+      <div class="kpi"><b data-k="der.lineal.wape" data-f="pct100"></b><small>error relativo</small></div></div>
+      <p class="nota">Versión 4 → 5: el error baja de <b data-k="modelo.v4.mae_dias" data-f="d1"></b> a <b data-k="modelo.v5.mae_dias" data-f="d1"></b> días (<span data-k="der.mejora_v4_pct" data-f="d1"></span>%) con las variables nuevas.</p></div>
+    <div class="card grafico rev"><h3>Error promedio en la prueba (días, menor es mejor)</h3><div data-chart="resultados"></div></div>
   </div>
 </section>
 
-<!-- 10. CONFIABILIDAD -->
-<section class="slide" data-titulo="Confiabilidad" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2>Un resultado consistente, no solo un promedio</h2>
+<section class="sec" id="confianza">
+  <p class="n">// 06 · CONFIABILIDAD</p>
+  <h2>Consistente mes a mes, no solo un promedio</h2>
   <div class="cols c2 alinear">
-    <div class="card grafico"><h3>Error mes a mes en la prueba (días)</h3><div data-chart="meses"></div>
-      <p class="nota">El modelo gana a la referencia histórica en <b data-k="modelo.victorias.historica" data-f="int"></b> de <b data-k="modelo.meses_prueba" data-f="int"></b> meses.</p></div>
-    <div>
-      <h3>Qué tan confiable es cada predicción</h3>
-      <div class="cols c3 conf-tarjetas" data-chart="confianza"></div>
-      <p class="nota">La confianza depende de cuántas casas se vendieron en la zona 3 meses antes. El rango esperado del <b data-k="modelo.cobertura.nivel" data-f="int"></b>% acertó el <b data-k="modelo.cobertura.total" data-f="pct1"></b> de las veces en la prueba.</p>
-    </div>
+    <div class="card grafico rev"><h3>Error mes a mes en la prueba (días)</h3><div data-chart="meses"></div><p class="nota">Gana a la referencia histórica en <b data-k="modelo.victorias.historica" data-f="int"></b> de <b data-k="modelo.meses_prueba" data-f="int"></b> meses.</p></div>
+    <div class="rev"><h3>Confianza de cada predicción</h3><div class="cols c3 conf-tarjetas" data-chart="confianza"></div><p class="nota">Depende de cuántas casas se vendieron en la zona 3 meses antes. El rango esperado del <b data-k="modelo.cobertura.nivel" data-f="int"></b>% acertó el <b data-k="modelo.cobertura.total" data-f="pct1"></b> de las veces.</p></div>
   </div>
 </section>
 
-<!-- 11. PROBABILIDAD -->
-<section class="slide" data-titulo="De días a probabilidad" data-seg="2 · Arquitectura Medallón · ~7 min">
-  <h2>Cómo se convierte la predicción en una probabilidad</h2>
+<section class="sec" id="probabilidad">
+  <p class="n">// 07 · DE DÍAS A PROBABILIDAD</p>
+  <h2>Cómo se convierte la predicción en probabilidad</h2>
   <div class="cols c2 alinear">
-    <div>
-      <ol class="pasos">
-        <li><b>Medimos cómo se equivocó el modelo</b> en el pasado: razón = tiempo real ÷ tiempo predicho (1,0 es acertar).</li>
-        <li><b>Guardamos esa curva de error</b> para cada nivel de confianza (99 percentiles).</li>
-        <li><b>Probabilidad de vender en x días o menos</b> = porcentaje de errores pasados que cumplen razón ≤ x ÷ días predichos.</li>
-      </ol>
-      <div class="franja">Ejemplo: se predicen 60 días y preguntamos por 45. La razón necesaria es 45 ÷ 60 = 0,75. Si el 30% de las razones pasadas fue ≤ 0,75, la probabilidad es 30%.</div>
-      <p class="nota">Se comprobó en la prueba: cuando el modelo dice 70%, ¿ocurre cerca del 70%?</p>
-    </div>
-    <div class="card grafico">
-      <div class="selector" data-selector="umbral"></div>
-      <div data-chart="calibracion"></div>
-      <p class="nota" data-calibracion-nota></p>
-    </div>
+    <div class="rev"><ol class="pasos"><li><b>Medimos cómo se equivocó el modelo</b> en el pasado: razón = real ÷ predicho.</li><li><b>Guardamos la curva de error</b> por nivel de confianza (99 percentiles).</li><li><b>P(vender en x días o menos)</b> = porcentaje de errores pasados con razón ≤ x ÷ predicción.</li></ol>
+      <div class="franja">Ejemplo: se predicen 60 días y preguntamos por 45. Razón = 0,75. Si el 30% de las razones pasadas fue ≤ 0,75, la probabilidad es 30%.</div></div>
+    <div class="card grafico rev"><div class="selector" data-selector="umbral"></div><div data-chart="calibracion"></div><p class="nota" data-calibracion-nota></p></div>
   </div>
 </section>
 
-<!-- 12. USO / SIMULADOR -->
-<section class="slide" data-titulo="Uso del modelo" data-seg="3 · Propuesta de implementación · ~5 min">
-  <h2>El modelo en un escenario real</h2>
-  <div class="flujo mini">
-    <div class="nodo"><span class="paso-n">1</span><span><b>Cada mes</b> llegan datos nuevos de Redfin</span></div>
-    <span class="flecha">→</span>
-    <div class="nodo"><span class="paso-n">2</span><span><b>Databricks</b> los procesa: Bronze → Silver → Gold → modelo</span></div>
-    <span class="flecha">→</span>
-    <div class="nodo"><span class="paso-n">3</span><span><b>Tabla de predicciones</b> lista para consulta</span></div>
-    <span class="flecha">→</span>
+<section class="sec" id="produccion">
+  <p class="n">// 08 · PROPUESTA DE IMPLEMENTACIÓN</p>
+  <h2>El modelo en producción</h2>
+  <div class="flujo mini rev">
+    <div class="nodo"><span class="paso-n">1</span><span><b>Cada mes</b> llegan datos nuevos de Redfin</span></div><span class="flecha">→</span>
+    <div class="nodo"><span class="paso-n">2</span><span><b>Databricks</b> procesa Bronze → Silver → Gold → modelo</span></div><span class="flecha">→</span>
+    <div class="nodo"><span class="paso-n">3</span><span><b>Tabla de predicciones</b> lista para consulta</span></div><span class="flecha">→</span>
     <div class="nodo"><span class="paso-n">4</span><span><b>La persona</b> ingresa su zona y recibe la respuesta</span></div>
   </div>
-  <div class="card" id="sim-diapositiva"></div>
-</section>
-
-<!-- 13. BENEFICIOS, LIMITACIONES, SIGUIENTES PASOS -->
-<section class="slide" data-titulo="Beneficios y siguientes pasos" data-seg="3 · Propuesta de implementación · ~5 min">
-  <h2>Qué aporta, qué no, y qué sigue</h2>
-  <div class="cols c3">
-    <div class="card"><h3>Beneficios</h3><ul class="lista compacta">
-      <li>Una referencia objetiva del plazo de venta de una zona.</li>
-      <li>Una respuesta en términos de probabilidad, fácil de entender.</li>
-      <li>Un proceso reproducible y auditable gracias a la arquitectura Medallón.</li>
-    </ul></div>
-    <div class="card"><h3>Limitaciones</h3><ul class="lista compacta">
-      <li>Predice el tiempo típico de una <b>zona</b>, no el de una propiedad.</li>
-      <li>Solo incluye viviendas que sí se vendieron.</li>
-      <li><b data-k="der.pct_baja" data-f="int"></b>% de las zonas tiene confianza baja: el rango es amplio.</li>
-      <li>Menos de 4 años de datos y un mercado que cambia.</li>
-    </ul></div>
-    <div class="card"><h3>Siguientes pasos</h3><ul class="lista compacta">
-      <li>Comparar las predicciones con los datos reales de oct. a dic. de 2026.</li>
-      <li>Incorporar datos por propiedad (precio de lista, habitaciones, metros).</li>
-      <li>Actualizar el proceso cada mes y publicar la consulta en una aplicación.</li>
-    </ul></div>
+  <div class="card rev" id="sim-diapositiva" style="margin-top:1.4rem"></div>
+  <div class="cols c3" style="margin-top:1.4rem">
+    <div class="card rev"><h3>Beneficios</h3><ul class="lista compacta"><li>Referencia objetiva del plazo de venta.</li><li>Respuesta en probabilidad, fácil de entender.</li><li>Proceso reproducible y auditable.</li></ul></div>
+    <div class="card rev"><h3>Limitaciones</h3><ul class="lista compacta"><li>Predice una <b>zona</b>, no una propiedad.</li><li>Solo viviendas que sí se vendieron.</li><li><b data-k="der.pct_baja" data-f="int"></b>% de zonas con confianza baja.</li></ul></div>
+    <div class="card rev"><h3>Siguientes pasos</h3><ul class="lista compacta"><li>Comparar con datos reales de oct. a dic. 2026.</li><li>Sumar datos por propiedad.</li><li>Publicar la consulta como aplicación.</li></ul></div>
   </div>
 </section>
 
-<!-- 14. CIERRE -->
-<section class="slide portada cierre" data-titulo="Cierre" data-seg="">
-  <p class="etq">Lo que demostramos</p>
-  <div class="cols c3 kpis grandes">
+<section class="sec cierre-sec" id="cierre">
+  <p class="n">// FIN DEL PIPELINE</p>
+  <div class="cols c3 kpis grandes rev">
     <div class="kpi"><b><span data-k="der.lineal.mae" data-f="d1"></span> días</b><small>de error promedio por zona</small></div>
     <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d0"></span>%</b><small>menos error que la mejor referencia</small></div>
-    <div class="kpi"><b><span data-k="modelo.cobertura.total" data-f="d1"></span>%</b><small>de aciertos del rango esperado del <span data-k="modelo.cobertura.nivel" data-f="int"></span>%</small></div>
+    <div class="kpi"><b><span data-k="modelo.cobertura.total" data-f="d1"></span>%</b><small>de aciertos del rango esperado</small></div>
   </div>
-  <h1>¿Preguntas?</h1>
-  <div class="equipo">
-    <span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span>
-  </div>
+  <h1 class="rev">¿Preguntas?</h1>
+  <div class="equipo"><span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span></div>
+  <p style="margin-top:1.5rem"><a class="cta" href="simulador.html">Abrir el simulador →</a></p>
 </section>
-
-</div>
-
-<footer id="navegacion">
-  <button type="button" id="btn-ant" aria-label="Anterior">←</button>
-  <div id="progreso"><i></i></div>
-  <span id="contador"></span>
-  <span id="seg-actual"></span>
-  <span id="reloj" class="oculto"></span>
-  <button type="button" id="btn-sig" aria-label="Siguiente">→</button>
-</footer>
-<div id="ayuda-teclas">← → navegar · F pantalla completa · T cronómetro · número + Enter ir a una diapositiva</div>
+<footer class="pie">Big Data · PySpark · Databricks · Arquitectura Medallón</footer>
+</main>
 
 <script src="data/datos_presentacion.js"></script>
 <script src="data/datos_zip.js"></script>

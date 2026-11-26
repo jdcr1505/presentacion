@@ -169,48 +169,47 @@
   const simEl = document.getElementById("sim-diapositiva");
   if (simEl) g.Simulador.montar(simEl, Z);
 
-  // ---------- Navegación ----------
-  const slides = Array.from(document.querySelectorAll(".slide"));
-  const barra = document.querySelector("#progreso i"), cont = document.getElementById("contador");
-  const segEl = document.getElementById("seg-actual"), reloj = document.getElementById("reloj");
-  let i = 0, inicio = null, relojVisible = false, tecleado = "";
+  // ---------- Landing: scroll, menú, revelado y contador ----------
+  const secs = Array.from(document.querySelectorAll(".sec"));
+  const links = Array.from(document.querySelectorAll("#menu a"));
+  const barra = document.querySelector("#progreso i");
+  const onScroll = () => {
+    const h = document.documentElement;
+    barra.style.width = (h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight) * 100) + "%";
+    let act = 0;
+    secs.forEach((s, k) => { if (s.getBoundingClientRect().top < innerHeight * 0.4) act = k; });
+    links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + secs[act].id));
+  };
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
-  function ir(n) {
-    i = Math.max(0, Math.min(slides.length - 1, n));
-    slides.forEach((s, k) => s.classList.toggle("activa", k === i));
-    barra.style.width = (slides.length === 1 ? 100 : i / (slides.length - 1) * 100) + "%";
-    cont.textContent = (i + 1) + " / " + slides.length;
-    segEl.textContent = slides[i].dataset.seg || slides[i].dataset.titulo || "";
-    if (i > 0 && inicio == null) inicio = Date.now();
-    try { history.replaceState(null, "", "#" + (i + 1)); } catch (e) { /* archivo local: se ignora */ }
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("vis"); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll(".rev").forEach(el => io.observe(el));
+
+  // contador de filas ingeridas (hero)
+  const cnt = document.getElementById("ingesta");
+  if (cnt) {
+    const meta = D.capas.bronze.filas, t0 = performance.now(), dur = 2600;
+    (function paso(t) {
+      const x = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - x, 3);
+      cnt.textContent = N.fmtInt(meta * e);
+      if (x < 1) requestAnimationFrame(paso);
+    })(t0);
   }
-  function pintarReloj() {
-    if (!relojVisible) return;
-    const s = inicio == null ? 0 : Math.floor((Date.now() - inicio) / 1000);
-    reloj.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") + " / 15:00";
-    reloj.className = s >= 900 ? "alerta-t" : (s >= 720 ? "aviso-t" : "");
+
+  // lluvia de datos del hero
+  const cv = document.getElementById("lluvia");
+  if (cv && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const c = cv.getContext("2d"); let W, H, cols, y;
+    const ajustar = () => { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; cols = Math.floor(W / 22); y = Array.from({ length: cols }, () => Math.random() * H); };
+    ajustar(); addEventListener("resize", ajustar);
+    setInterval(() => {
+      c.fillStyle = "rgba(6,8,16,.12)"; c.fillRect(0, 0, W, H);
+      c.font = "14px ui-monospace, Menlo, Consolas, monospace";
+      y.forEach((v, k) => {
+        c.fillStyle = Math.random() > .93 ? "#ff4fd8" : "#2de2c6";
+        c.fillText(Math.random() > .5 ? "1" : "0", k * 22, v);
+        y[k] = v > H + Math.random() * 9000 ? 0 : v + 18;
+      });
+    }, 70);
   }
-  setInterval(pintarReloj, 1000);
-
-  document.getElementById("btn-ant").addEventListener("click", () => ir(i - 1));
-  document.getElementById("btn-sig").addEventListener("click", () => ir(i + 1));
-  document.addEventListener("keydown", e => {
-    const t = e.target, tag = (t && t.tagName) || "";
-    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-    const k = e.key;
-    if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); ir(i + 1); }
-    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); ir(i - 1); }
-    else if (k === "Home") ir(0);
-    else if (k === "End") ir(slides.length - 1);
-    else if (k === "f" || k === "F") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
-    else if (k === "t" || k === "T") { relojVisible = !relojVisible; reloj.classList.toggle("oculto", !relojVisible); pintarReloj(); }
-    else if (k === "r" || k === "R") { inicio = null; pintarReloj(); }
-    else if (/^[0-9]$/.test(k)) { tecleado += k; }
-    else if (k === "Enter" && tecleado) { ir(parseInt(tecleado, 10) - 1); tecleado = ""; }
-    else tecleado = "";
-  });
-
-  const h = parseInt((location.hash || "").replace("#", ""), 10);
-  ir(isNaN(h) ? 0 : h - 1);
-  setTimeout(() => { const a = document.getElementById("ayuda-teclas"); if (a) a.classList.add("oculto"); }, 7000);
 })(window);
