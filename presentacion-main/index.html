@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Cuánto tarda en venderse una vivienda? · Big Data</title>
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+<div id="aviso-datos" class="aviso-datos oculto"></div>
+
+<header id="top"><div>
+  <span class="logo">&gt;_ bigdata.lakehouse</span>
+  <nav id="menu">
+    <a href="#inicio">Inicio</a><a href="#cinco-v">5 V</a><a href="#problema">Problema</a><a href="#medallon">Medallón</a><a href="#gold">Gold</a><a href="#modelo">Modelo</a><a href="#confianza">Confianza</a><a href="#probabilidad">Probabilidad</a><a href="#produccion">Producción</a><a href="#cierre">Cierre</a>
+  </nav>
+</div><div id="progreso"><i></i></div></header>
+
+<main id="diapositivas">
+
+<section class="sec hero" id="inicio">
+  <canvas id="lluvia"></canvas>
+  <p class="etq">Big Data · Proyecto final · Arquitectura Medallón · PySpark + Databricks</p>
+  <h1>¿Cuánto tarda en venderse <em>una vivienda</em> en tu zona?</h1>
+  <p class="sub">Procesamos más de un millón de registros del mercado inmobiliario de EE. UU., los refinamos en un pipeline distribuido y los convertimos en un simulador de probabilidad por código postal.</p>
+  <div class="term">
+    <span class="g">$ spark-submit pipeline_medallon.py</span><br>
+    <span class="p">✔</span> filas ingeridas en Bronze<b id="ingesta">0</b>
+    <span class="g"><span data-k="meta.zips_distintos" data-f="int"></span> códigos postales · <span data-k="capas.gold.variables" data-f="int"></span> variables en Gold</span>
+  </div>
+  <a class="cta" href="#cinco-v">Bajar al pipeline ↓</a>
+  <div class="equipo" style="margin-top:2rem"><span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span></div>
+  <p class="meta-pie">Sustentación final · 28 de noviembre de 2026</p>
+</section>
+
+<section class="sec" id="cinco-v">
+  <p class="n">// 01 · POR QUÉ ES BIG DATA</p>
+  <h2>Las 5 V de este proyecto</h2>
+  <div class="cols c5 vs">
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.filas" data-f="int"></span></big><b>Volumen</b><p>filas de ventanas móviles por zona y mes. Demasiado para una hoja de cálculo; hecho para Spark.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.columnas" data-f="int"></span> cols</big><b>Variedad</b><p>CSV crudo con textos, fechas, precios, inventarios y marcas de «sin dato» que hay que tipar.</p></div>
+    <div class="card v rev"><span class="l">V</span><big>Mensual</big><b>Velocidad</b><p>Cada mes llega una carga nueva de Redfin y el pipeline se vuelve a ejecutar completo.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.silver.banderas.flag_objetivo_extremo" data-f="int"></span></big><b>Veracidad</b><p>filas con tiempos extremos: se marcan con banderas, no se borran.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="predicciones.n" data-f="int"></span></big><b>Valor</b><p>zonas con predicción lista para consultar en el simulador.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="problema">
+  <p class="n">// 02 · DEFINICIÓN Y ALCANCE</p>
+  <h2>Un plazo de venta fijado a ciegas</h2>
+  <div class="cols c2">
+    <div class="card rev"><h3>Problema</h3><p>Quien quiere vender una vivienda fija su expectativa sin referencias objetivas: no sabe si en su zona lo normal es vender en 30 o en 90 días.</p></div>
+    <div class="card rev"><h3>Objetivo</h3><p>Estimar cuántos días tarda típicamente en venderse una vivienda en un código postal y con qué probabilidad se cumple un plazo dado.</p></div>
+    <div class="card rev"><h3>Unidad de análisis</h3><p>Un <b>código postal</b> en una <b>ventana móvil de 3 meses</b>. No es una propiedad individual: el dato es un resumen por zona.</p></div>
+    <div class="card rev"><h3>Dataset</h3><p>Redfin Housing Market por ZIP, <span data-k="der.periodo_txt"></span>. Variable objetivo: mediana de días en el mercado.</p></div>
+  </div>
+  <div class="franja rev" style="margin-top:1.2rem"><b>Decisión del proyecto:</b> pasamos de predecir el precio, muy volátil, a predecir el plazo de venta, un objetivo más acotado.</div>
+</section>
+
+<section class="sec" id="medallon">
+  <p class="n">// 03 · ARQUITECTURA MEDALLÓN</p>
+  <h2>Del CSV al simulador, capa por capa</h2>
+  <div class="pipe rev">
+    <div><i></i><b>CSV</b><small>fuente Redfin</small></div>
+    <div><i></i><b data-k="capas.bronze.filas" data-f="int"></b><small>Bronze</small></div>
+    <div><i></i><b data-k="capas.silver.filas" data-f="int"></b><small>Silver</small></div>
+    <div><i></i><b data-k="capas.gold.filas" data-f="int"></b><small>Gold</small></div>
+    <div><i></i><b data-k="predicciones.n" data-f="int"></b><small>predicciones</small></div>
+  </div>
+  <div class="cols c3" style="margin-bottom:2.4rem">
+    <div class="card rev"><h3>ELT</h3><p>Primero se carga el dato tal cual y luego se transforma con el cómputo distribuido de Databricks.</p></div>
+    <div class="card rev"><h3>Reconstruible</h3><p>Si se pierden Silver y Gold, se recalculan desde Bronze. Lo comprobamos reconstruyendo Gold desde cero.</p></div>
+    <div class="card rev"><h3>Una capa, un propósito</h3><p>Bronze conserva, Silver da confianza y Gold sirve al modelo.</p></div>
+  </div>
+
+  <div class="capa bz rev">
+    <div><h3><span class="insignia bronze">Bronze</span> Conservar el dato tal como llegó</h3>
+      <ul class="lista"><li>Todo se lee <b>como texto</b>, sin inferir tipos: nada se pierde ni se altera.</li><li>Nombres de columna normalizados con <b>tabla de mapeo</b>.</li><li>Cada fila guarda archivo de origen, momento de carga y lote.</li><li>Se verifica que el conteo coincide con el del archivo original.</li></ul>
+      <div class="chips-fijos" data-chips="capas.bronze.metadatos" style="margin-top:.8rem"></div></div>
+    <div><div class="evidencia"><small>Evidencia · consulta</small><code>SELECT COUNT(*) FROM bronze_redfin_zip_market</code><span class="big-num" data-k="capas.bronze.filas" data-f="int"></span></div>
+      <ul class="lista tabla" data-lista="capas.bronze.tablas" style="margin-top:.8rem"></ul></div>
+  </div>
+
+  <div class="capa sv rev">
+    <div><h3><span class="insignia silver">Silver</span> Se marca, no se borra</h3>
+      <div class="cols c2 kpis"><div class="kpi"><b data-k="capas.silver.filas_eliminadas" data-f="int"></b><small>filas eliminadas</small></div><div class="kpi"><b data-k="capas.silver.conversiones_fallidas" data-f="int"></b><small>conversiones fallidas</small></div></div>
+      <ul class="lista"><li><b>Tipos:</b> textos a números y fechas de forma segura.</li><li><b>Vacíos:</b> NA, guiones y vacío pasan a nulos reales.</li><li><b>Banderas de calidad</b> para lo sospechoso.</li><li><b>Unicidad:</b> una fila por código postal y periodo.</li></ul></div>
+    <div class="card grafico"><h3>Filas marcadas por las banderas</h3><div data-chart="banderas"></div><h3 style="margin-top:1rem">Datos faltantes (%)</h3><div data-chart="nulos"></div></div>
+  </div>
+
+  <div class="capa sv rev">
+    <div class="card grafico"><h3>Distribución del tiempo de venta (días)</h3><div data-chart="histograma"></div><p class="nota">El 99% está bajo <b data-k="der.p99" data-f="int"></b> días; el máximo llega a <b data-k="der.p999" data-f="int"></b>. Pasar de <b data-k="calidad.umbral_extremo_dias" data-f="int"></b> días se marca como extremo.</p></div>
+    <div class="card grafico"><h3>Ruido según casas vendidas</h3><div data-chart="ventas"></div><p class="nota">Con muy pocas ventas la mediana es ruido: una etiqueta es confiable con al menos <b data-k="calidad.min_ventas" data-f="int"></b> ventas.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="gold">
+  <p class="n">// 04 · CAPA GOLD</p>
+  <h2><span class="insignia gold">Gold</span> La tabla que el modelo necesita</h2>
+  <div class="cols c3 kpis rev"><div class="kpi"><b data-k="capas.gold.filas" data-f="int"></b><small>filas</small></div><div class="kpi"><b data-k="capas.gold.variables" data-f="int"></b><small>variables</small></div><div class="kpi"><b data-k="predicciones.n" data-f="int"></b><small>zonas con predicción</small></div></div>
+  <div class="card grafico rev"><h3>Separación en el tiempo: entrenamiento, embargo y prueba</h3><div data-chart="particiones"></div></div>
+  <div class="cols c2 alinear" style="margin-top:1.2rem">
+    <div class="card grafico rev"><h3>Variables por grupo</h3><div data-chart="grupos"></div></div>
+    <ul class="lista compacta rev"><li><b>Sin fuga de información:</b> solo se usa lo que se sabía 3 meses o más antes.</li><li><b>Embargo de 3 meses</b> entre entrenamiento y prueba.</li><li><b>Etiqueta confiable:</b> tiempo no extremo y al menos 5 ventas.</li><li><b>Comprobado:</b> variables nuevas recalculadas a mano desde Silver con el mismo resultado.</li></ul>
+  </div>
+</section>
+
+<section class="sec" id="modelo">
+  <p class="n">// 05 · MODELADO</p>
+  <h2>El modelo supera a las referencias simples</h2>
+  <div class="cols c2 alinear">
+    <div><div class="cols c2 kpis rev">
+      <div class="kpi"><b><span data-k="der.lineal.mae" data-f="d1"></span> días</b><small><span data-k="der.lineal.mae_meses" data-f="d2"></span> meses de error promedio</small></div>
+      <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d1"></span>%</b><small>menos error que la mejor referencia</small></div>
+      <div class="kpi"><b data-k="der.lineal.r2" data-f="d2"></b><small>R² entre zonas</small></div>
+      <div class="kpi"><b data-k="der.lineal.wape" data-f="pct100"></b><small>error relativo</small></div></div>
+      <p class="nota">Versión 4 → 5: el error baja de <b data-k="modelo.v4.mae_dias" data-f="d1"></b> a <b data-k="modelo.v5.mae_dias" data-f="d1"></b> días (<span data-k="der.mejora_v4_pct" data-f="d1"></span>%) con las variables nuevas.</p></div>
+    <div class="card grafico rev"><h3>Error promedio en la prueba (días, menor es mejor)</h3><div data-chart="resultados"></div></div>
+  </div>
+</section>
+
+<section class="sec" id="confianza">
+  <p class="n">// 06 · CONFIABILIDAD</p>
+  <h2>Consistente mes a mes, no solo un promedio</h2>
+  <div class="cols c2 alinear">
+    <div class="card grafico rev"><h3>Error mes a mes en la prueba (días)</h3><div data-chart="meses"></div><p class="nota">Gana a la referencia histórica en <b data-k="modelo.victorias.historica" data-f="int"></b> de <b data-k="modelo.meses_prueba" data-f="int"></b> meses.</p></div>
+    <div class="rev"><h3>Confianza de cada predicción</h3><div class="cols c3 conf-tarjetas" data-chart="confianza"></div><p class="nota">Depende de cuántas casas se vendieron en la zona 3 meses antes. El rango esperado del <b data-k="modelo.cobertura.nivel" data-f="int"></b>% acertó el <b data-k="modelo.cobertura.total" data-f="pct1"></b> de las veces.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="probabilidad">
+  <p class="n">// 07 · DE DÍAS A PROBABILIDAD</p>
+  <h2>Cómo se convierte la predicción en probabilidad</h2>
+  <div class="cols c2 alinear">
+    <div class="rev"><ol class="pasos"><li><b>Medimos cómo se equivocó el modelo</b> en el pasado: razón = real ÷ predicho.</li><li><b>Guardamos la curva de error</b> por nivel de confianza (99 percentiles).</li><li><b>P(vender en x días o menos)</b> = porcentaje de errores pasados con razón ≤ x ÷ predicción.</li></ol>
+      <div class="franja">Ejemplo: se predicen 60 días y preguntamos por 45. Razón = 0,75. Si el 30% de las razones pasadas fue ≤ 0,75, la probabilidad es 30%.</div></div>
+    <div class="card grafico rev"><div class="selector" data-selector="umbral"></div><div data-chart="calibracion"></div><p class="nota" data-calibracion-nota></p></div>
+  </div>
+</section>
+
+<section class="sec" id="produccion">
+  <p class="n">// 08 · PROPUESTA DE IMPLEMENTACIÓN</p>
+  <h2>El modelo en producción</h2>
+  <div class="flujo mini rev">
+    <div class="nodo"><span class="paso-n">1</span><span><b>Cada mes</b> llegan datos nuevos de Redfin</span></div><span class="flecha">→</span>
+    <div class="nodo"><span class="paso-n">2</span><span><b>Databricks</b> procesa Bronze → Silver → Gold → modelo</span></div><span class="flecha">→</span>
+    <div class="nodo"><span class="paso-n">3</span><span><b>Tabla de predicciones</b> lista para consulta</span></div><span class="flecha">→</span>
+    <div class="nodo"><span class="paso-n">4</span><span><b>La persona</b> ingresa su zona y recibe la respuesta</span></div>
+  </div>
+  <div class="card rev" id="sim-diapositiva" style="margin-top:1.4rem"></div>
+  <div class="cols c3" style="margin-top:1.4rem">
+    <div class="card rev"><h3>Beneficios</h3><ul class="lista compacta"><li>Referencia objetiva del plazo de venta.</li><li>Respuesta en probabilidad, fácil de entender.</li><li>Proceso reproducible y auditable.</li></ul></div>
+    <div class="card rev"><h3>Limitaciones</h3><ul class="lista compacta"><li>Predice una <b>zona</b>, no una propiedad.</li><li>Solo viviendas que sí se vendieron.</li><li><b data-k="der.pct_baja" data-f="int"></b>% de zonas con confianza baja.</li></ul></div>
+    <div class="card rev"><h3>Siguientes pasos</h3><ul class="lista compacta"><li>Comparar con datos reales de oct. a dic. 2026.</li><li>Sumar datos por propiedad.</li><li>Publicar la consulta como aplicación.</li></ul></div>
+  </div>
+</section>
+
+<section class="sec cierre-sec" id="cierre">
+  <p class="n">// FIN DEL PIPELINE</p>
+  <div class="cols c3 kpis grandes rev">
+    <div class="kpi"><b><span data-k="der.lineal.mae" data-f="d1"></span> días</b><small>de error promedio por zona</small></div>
+    <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d0"></span>%</b><small>menos error que la mejor referencia</small></div>
+    <div class="kpi"><b><span data-k="modelo.cobertura.total" data-f="d1"></span>%</b><small>de aciertos del rango esperado</small></div>
+  </div>
+  <h1 class="rev">¿Preguntas?</h1>
+  <div class="equipo"><span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span></div>
+  <p style="margin-top:1.5rem"><a class="cta" href="simulador.html">Abrir el simulador →</a></p>
+</section>
+<footer class="pie">Big Data · PySpark · Databricks · Arquitectura Medallón</footer>
+</main>
+
+<script src="data/datos_presentacion.js"></script>
+<script src="data/datos_zip.js"></script>
+<script src="js/nucleo.js"></script>
+<script src="js/graficos.js"></script>
+<script src="js/simulador.js"></script>
+<script src="js/presentacion.js"></script>
+</body>
+</html>
