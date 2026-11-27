@@ -106,7 +106,7 @@
 
   // ---------- Curva de probabilidad acumulada de una zona (simulador) ----------
   G.curva = function (el, curva, pred, cfg, marca) {
-    const W = 640, H = 250, m = { l: 46, r: 16, t: 14, b: 36 };
+    const W = 640, H = 272, m = { l: 50, r: 16, t: 14, b: 58 };
     const pts = curva.map((q, i) => [N.limitar(pred * q, cfg), (i + 1) / curva.length]);
     const xmin = Math.min(pts[0][0], marca ? marca.x : Infinity);
     const xmax = Math.max(pts[pts.length - 1][0], marca ? marca.x : 0);
@@ -115,14 +115,14 @@
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="probabilidad acumulada">`;
     for (let t = 0; t <= 1.0001; t += 0.25) svg += `<line class="eje-g" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="eje-t" x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${Math.round(t * 100)}%</text>`;
     const paso = nice((b - a) / 6);
-    for (let t = Math.ceil(a / paso) * paso; t <= b; t += paso) svg += `<text class="eje-t" x="${x(t)}" y="${H - 12}" text-anchor="middle">${t}</text>`;
+    for (let t = Math.ceil(a / paso) * paso; t <= b; t += paso) svg += `<text class="eje-t" x="${x(t)}" y="${H - m.b + 22}" text-anchor="middle">${t}</text>`;
     const d = `M ${x(a)} ${y(0)} ` + pts.map(p => `L ${x(p[0]).toFixed(1)} ${y(p[1]).toFixed(1)}`).join(" ");
     svg += `<path class="curva-rel" d="${d} L ${x(pts[pts.length - 1][0])} ${y(1)} L ${x(b)} ${y(1)} L ${x(b)} ${y(0)} Z"/><path class="curva-linea" d="${d}"/>`;
     if (marca) {
       svg += `<line class="marca" x1="${x(marca.x)}" x2="${x(marca.x)}" y1="${y(0)}" y2="${y(marca.p)}"/><line class="marca" x1="${m.l}" x2="${x(marca.x)}" y1="${y(marca.p)}" y2="${y(marca.p)}"/>`;
       svg += `<circle class="marca-pt" cx="${x(marca.x)}" cy="${y(marca.p)}" r="6"/>`;
     }
-    svg += `<text class="eje-t" x="${W / 2}" y="${H - 1}" text-anchor="middle" font-size="11">días de venta</text></svg>`;
+    svg += `<text class="eje-t tit" x="${W / 2}" y="${H - 6}" text-anchor="middle">días de venta</text></svg>`;
     el.innerHTML = svg;
   };
 

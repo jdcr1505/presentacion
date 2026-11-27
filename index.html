@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>¿Cuánto tarda en venderse una vivienda? · Big Data</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%232de2c6'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%23ff4fd8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%23060810'/%3E%3Ccircle cx='16' cy='40' r='3.5' fill='%232de2c6'/%3E%3Ccircle cx='24' cy='24' r='3.5' fill='%235eead4'/%3E%3Ccircle cx='28' cy='46' r='3.5' fill='%2338bdf8'/%3E%3Ccircle cx='38' cy='18' r='3.5' fill='%23c084fc'/%3E%3Ccircle cx='44' cy='38' r='3.5' fill='%23e879f9'/%3E%3Ccircle cx='50' cy='24' r='3.5' fill='%23ff4fd8'/%3E%3Cline x1='13' y1='51' x2='51' y2='13' stroke='url(%23g)' stroke-width='5.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/estilos.css">
 <link rel="stylesheet" href="css/landing.css">
 </head>
@@ -11,7 +12,7 @@
 <div id="aviso-datos" class="aviso-datos oculto"></div>
 
 <header id="top"><div>
-  <span class="logo">&gt;_ bigdata.lakehouse</span>
+  <span class="logo">>_ bigdata.lakehouse</span>
   <nav id="menu">
     <a href="#inicio">Inicio</a><a href="#cinco-v">5 V</a><a href="#problema">Problema</a><a href="#medallon">Medallón</a><a href="#gold">Gold</a><a href="#modelo">Modelo</a><a href="#confianza">Confianza</a><a href="#probabilidad">Probabilidad</a><a href="#produccion">Producción</a><a href="#cierre">Cierre</a>
   </nav>
@@ -25,22 +26,21 @@
   <h1>¿Cuánto tarda en venderse <em>una vivienda</em> en tu zona?</h1>
   <p class="sub">Procesamos más de un millón de registros del mercado inmobiliario de EE. UU., los refinamos en un pipeline distribuido y los convertimos en un simulador de probabilidad por código postal.</p>
   <div class="term">
-    <span class="g">$ spark-submit pipeline_medallon.py</span><br>
+    <span class="g">▶ notebook Medallón · Databricks</span><br>
     <span class="p">✔</span> filas ingeridas en Bronze<b id="ingesta">0</b>
     <span class="g"><span data-k="meta.zips_distintos" data-f="int"></span> códigos postales · <span data-k="capas.gold.variables" data-f="int"></span> variables en Gold</span>
   </div>
   <a class="cta" href="#cinco-v">Bajar al pipeline ↓</a>
   <div class="equipo" style="margin-top:2rem"><span>Sara Murcia</span><span>Alexandra Gutiérrez</span><span>Juan David Caicedo</span><span>Juan David Cruz</span><span>Santiago Gil</span></div>
-  <p class="meta-pie">Sustentación final · 28 de noviembre de 2026</p>
 </section>
 
 <section class="sec" id="cinco-v">
   <p class="n">// 01 · POR QUÉ ES BIG DATA</p>
   <h2>Las 5 V de este proyecto</h2>
   <div class="cols c5 vs">
-    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.filas" data-f="int"></span></big><b>Volumen</b><p>filas de ventanas móviles por zona y mes. Demasiado para una hoja de cálculo; hecho para Spark.</p></div>
-    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.columnas" data-f="int"></span> cols</big><b>Variedad</b><p>CSV crudo con textos, fechas, precios, inventarios y marcas de «sin dato» que hay que tipar.</p></div>
-    <div class="card v rev"><span class="l">V</span><big>Mensual</big><b>Velocidad</b><p>Cada mes llega una carga nueva de Redfin y el pipeline se vuelve a ejecutar completo.</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.filas" data-f="int"></span></big><b>Volumen</b><p>filas de ventanas móviles por zona y mes. Supera el límite de filas de una hoja de Excel (1.048.576).</p></div>
+    <div class="card v rev"><span class="l">V</span><big><span data-k="capas.bronze.columnas" data-f="int"></span> cols</big><b>Variedad</b><p>Una sola fuente, pero con textos, fechas, precios, inventarios y marcas de «sin dato» que hay que tipar.</p></div>
+    <div class="card v rev"><span class="l">V</span><big>Mensual</big><b>Velocidad</b><p>Hoy cargamos el archivo completo; en producción llegaría una carga nueva cada mes y el pipeline se volvería a ejecutar.</p></div>
     <div class="card v rev"><span class="l">V</span><big><span data-k="capas.silver.banderas.flag_objetivo_extremo" data-f="int"></span></big><b>Veracidad</b><p>filas con tiempos extremos: se marcan con banderas, no se borran.</p></div>
     <div class="card v rev"><span class="l">V</span><big><span data-k="predicciones.n" data-f="int"></span></big><b>Valor</b><p>zonas con predicción lista para consultar en el simulador.</p></div>
   </div>
@@ -93,6 +93,19 @@
     <div class="card grafico"><h3>Distribución del tiempo de venta (días)</h3><div data-chart="histograma"></div><p class="nota">El 99% está bajo <b data-k="der.p99" data-f="int"></b> días; el máximo llega a <b data-k="der.p999" data-f="int"></b>. Pasar de <b data-k="calidad.umbral_extremo_dias" data-f="int"></b> días se marca como extremo.</p></div>
     <div class="card grafico"><h3>Ruido según casas vendidas</h3><div data-chart="ventas"></div><p class="nota">Con muy pocas ventas la mediana es ruido: una etiqueta es confiable con al menos <b data-k="calidad.min_ventas" data-f="int"></b> ventas.</p></div>
   </div>
+
+  <div class="cols c2 alinear rev" style="margin-top:1.2rem">
+    <div class="card grafico">
+      <h3>Estacionalidad histórica: días en el mercado (2023–2026)</h3>
+      <div data-chart="estacionalidad_dom"></div>
+      <p class="nota">Cada enero alcanza picos estacionales y baja en primavera/verano; esto motiva las variables cíclicas (<code>mes_sin</code>, <code>mes_cos</code>).</p>
+    </div>
+    <div class="card grafico">
+      <h3>Volumen mensual de viviendas vendidas (miles)</h3>
+      <div data-chart="estacionalidad_ventas"></div>
+      <p class="nota">Las ventas siguen el ciclo inverso al tiempo en el mercado (picos en mayo–junio y mínimos en invierno).</p>
+    </div>
+  </div>
 </section>
 
 <section class="sec" id="gold">
@@ -115,7 +128,7 @@
       <div class="kpi"><b><span data-k="der.mejora_pct" data-f="d1"></span>%</b><small>menos error que la mejor referencia</small></div>
       <div class="kpi"><b data-k="der.lineal.r2" data-f="d2"></b><small>R² entre zonas</small></div>
       <div class="kpi"><b data-k="der.lineal.wape" data-f="pct100"></b><small>error relativo</small></div></div>
-      <p class="nota">Versión 4 → 5: el error baja de <b data-k="modelo.v4.mae_dias" data-f="d1"></b> a <b data-k="modelo.v5.mae_dias" data-f="d1"></b> días (<span data-k="der.mejora_v4_pct" data-f="d1"></span>%) con las variables nuevas.</p></div>
+      <p class="nota">Con las variables nuevas (niveles ponderados, zona vecina e interacciones con el mes), el error baja de <b data-k="modelo.v4.mae_dias" data-f="d1"></b> a <b data-k="modelo.v5.mae_dias" data-f="d1"></b> días (<span data-k="der.mejora_v4_pct" data-f="d1"></span>% menos).</p></div>
     <div class="card grafico rev"><h3>Error promedio en la prueba (días, menor es mejor)</h3><div data-chart="resultados"></div></div>
   </div>
 </section>
@@ -123,18 +136,42 @@
 <section class="sec" id="confianza">
   <p class="n">// 06 · CONFIABILIDAD</p>
   <h2>Consistente mes a mes, no solo un promedio</h2>
-  <div class="cols c2 alinear">
-    <div class="card grafico rev"><h3>Error mes a mes en la prueba (días)</h3><div data-chart="meses"></div><p class="nota">Gana a la referencia histórica en <b data-k="modelo.victorias.historica" data-f="int"></b> de <b data-k="modelo.meses_prueba" data-f="int"></b> meses.</p></div>
-    <div class="rev"><h3>Confianza de cada predicción</h3><div class="cols c3 conf-tarjetas" data-chart="confianza"></div><p class="nota">Depende de cuántas casas se vendieron en la zona 3 meses antes. El rango esperado del <b data-k="modelo.cobertura.nivel" data-f="int"></b>% acertó el <b data-k="modelo.cobertura.total" data-f="pct1"></b> de las veces.</p></div>
+
+  <div class="cols c2">
+    <div class="card grafico rev">
+      <h3>Error mes a mes en la prueba (días)</h3>
+      <div data-chart="meses"></div>
+      <p class="nota">Gana a la referencia histórica en <b data-k="modelo.victorias.historica" data-f="int"></b> de <b data-k="modelo.meses_prueba" data-f="int"></b> meses.</p>
+    </div>
+    <div class="card grafico rev">
+      <h3>Días reales vs. predichos en prueba</h3>
+      <div data-chart="real_vs_pred"></div>
+      <p class="nota">Sigue tanto el pico invernal (ene. 2026) como la caída primaveral (may.–jun. 2026).</p>
+    </div>
+  </div>
+
+  <div class="rev" style="margin-top:1.4rem">
+    <h3>Confianza de cada predicción</h3>
+    <div class="conf-tarjetas" data-chart="confianza"></div>
+    <p class="nota">Depende de cuántas casas se vendieron en la zona 3 meses antes. El rango esperado del <b data-k="modelo.cobertura.nivel" data-f="int"></b>% acertó el <b data-k="modelo.cobertura.total" data-f="pct1"></b> de las veces.</p>
   </div>
 </section>
 
 <section class="sec" id="probabilidad">
   <p class="n">// 07 · DE DÍAS A PROBABILIDAD</p>
   <h2>Cómo se convierte la predicción en probabilidad</h2>
-  <div class="cols c2 alinear">
-    <div class="rev"><ol class="pasos"><li><b>Medimos cómo se equivocó el modelo</b> en el pasado: razón = real ÷ predicho.</li><li><b>Guardamos la curva de error</b> por nivel de confianza (99 percentiles).</li><li><b>P(vender en x días o menos)</b> = porcentaje de errores pasados con razón ≤ x ÷ predicción.</li></ol>
-      <div class="franja">Ejemplo: se predicen 60 días y preguntamos por 45. Razón = 0,75. Si el 30% de las razones pasadas fue ≤ 0,75, la probabilidad es 30%.</div></div>
+  <div class="cols c2">
+    <div class="rev prob-izq">
+      <div>
+        <ol class="pasos"><li><b>Medimos cómo se equivocó el modelo</b> en el pasado: razón = real ÷ predicho.</li><li><b>Guardamos la curva de error</b> por nivel de confianza (99 percentiles).</li><li><b>P(vender en x días o menos)</b> = porcentaje de errores pasados con razón ≤ x ÷ predicción.</li></ol>
+        <div class="franja">Ejemplo: se predicen 60 días y preguntamos por 45. Razón = 0,75. Si el 30% de las razones pasadas fue ≤ 0,75, la probabilidad es 30%.</div>
+      </div>
+      <div class="card prob-resumen" style="margin-top:1rem">
+        <h3>Error de calibración según el plazo evaluado</h3>
+        <div class="cols c4 kpis" style="margin-bottom:.45rem" data-chart="calibracion_resumen"></div>
+        <p class="nota" style="margin-top:0">A plazos largos (90–120 días) casi todas las zonas ya concretaron venta y la desviación cae por debajo de 1 punto porcentual.</p>
+      </div>
+    </div>
     <div class="card grafico rev"><div class="selector" data-selector="umbral"></div><div data-chart="calibracion"></div><p class="nota" data-calibracion-nota></p></div>
   </div>
 </section>
@@ -149,6 +186,10 @@
     <div class="nodo"><span class="paso-n">4</span><span><b>La persona</b> ingresa su zona y recibe la respuesta</span></div>
   </div>
   <div class="card rev" id="sim-diapositiva" style="margin-top:1.4rem"></div>
+  <div class="card grafico rev" style="margin-top:1.4rem">
+    <h3>Distribución de los 29.731 ZIPs proyectados (Oct–Dic 2026) por nivel de confianza</h3>
+    <div data-chart="proyeccion_confianza"></div>
+  </div>
   <div class="cols c3" style="margin-top:1.4rem">
     <div class="card rev"><h3>Beneficios</h3><ul class="lista compacta"><li>Referencia objetiva del plazo de venta.</li><li>Respuesta en probabilidad, fácil de entender.</li><li>Proceso reproducible y auditable.</li></ul></div>
     <div class="card rev"><h3>Limitaciones</h3><ul class="lista compacta"><li>Predice una <b>zona</b>, no una propiedad.</li><li>Solo viviendas que sí se vendieron.</li><li><b data-k="der.pct_baja" data-f="int"></b>% de zonas con confianza baja.</li></ul></div>

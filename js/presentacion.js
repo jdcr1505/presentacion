@@ -111,6 +111,20 @@
     G.barrasH(el, it, { fmt: v => N.fmtDec(v, 0) });
   });
 
+  if (Array.isArray(D.serie_mensual) && D.serie_mensual.length) {
+    const etq = D.serie_mensual.map((x, i) => (i % 6 === 0 || i === D.serie_mensual.length - 1) ? N.fmtMes(x.mes) : "");
+    montar("estacionalidad_dom", el => {
+      G.lineas(el, etq, [
+        { nombre: "Días medianos promedio", valores: D.serie_mensual.map(x => x.dom), clase: "s0" }
+      ], { aria: "Evolución mensual de días en el mercado" });
+    });
+    montar("estacionalidad_ventas", el => {
+      G.lineas(el, etq, [
+        { nombre: "Viviendas vendidas (miles)", valores: D.serie_mensual.map(x => Math.round(x.ventas / 1000)), clase: "s1" }
+      ], { aria: "Evolución mensual de viviendas vendidas" });
+    });
+  }
+
   montar("particiones", el => G.lineaTiempo(el, D.capas.gold.particiones));
 
   montar("grupos", el => {
@@ -134,15 +148,52 @@
     ], { min: 0, aria: "Error del modelo y de la referencia mes a mes" });
   });
 
-  montar("confianza", el => {
+  montar("real_vs_pred", el => {
+    const m = D.modelo.mes_a_mes;
+    G.lineas(el, m.map(x => N.fmtMes(x.mes)), [
+      { nombre: "Predicción modelo (días)", valores: m.map(x => x.pred), clase: "s0", etiquetar: true },
+      { nombre: "Dato real observado (días)", valores: m.map(x => x.real), clase: "s1" }
+    ], { aria: "Comparación de días reales y predichos en prueba" });
+  });
+
+montar("confianza", el => {
     const NOM = { alta: "Confianza alta", media: "Confianza media", baja: "Confianza baja" };
+    const VENTAS = { alta: "≥ 50 ventas previas", media: "20 a 49 ventas previas", baja: "< 20 ventas previas" };
     el.innerHTML = D.modelo.confianza.map(c => `
       <div class="card conf c-${c.nivel}">
-        <h4>${NOM[c.nivel]}</h4>
-        <b>${N.fmtDec(c.mae, 1)} días</b><small>error promedio</small>
-        <p>${N.fmtDec(c.pct_filas, 0)}% de los casos</p>
-        <p>Rango acierta ${N.fmtDec(c.cobertura, 0)}%</p>
+        <div class="conf-izq">
+          <h4>${NOM[c.nivel]}</h4>
+          <small>${VENTAS[c.nivel]} · ${N.fmtDec(c.pct_filas, 0)}% de casos</small>
+        </div>
+        <div class="conf-centro">
+          <b>${N.fmtDec(c.mae, 1)} días</b>
+          <small>error promedio</small>
+        </div>
+        <div class="conf-der">
+          <span>Rango acierta ${N.fmtDec(c.cobertura, 0)}%</span>
+          <small>ancho prom. ${N.fmtDec(c.ancho, 1)} días</small>
+        </div>
       </div>`).join("");
+  });
+
+  montar("calibracion_resumen", el => {
+    el.innerHTML = D.modelo.calibracion.map(c => `
+      <div class="kpi">
+        <b>±${N.fmtDec(c.error_pts, 1)} pts</b>
+        <small>plazo ${c.umbral} días</small>
+      </div>`).join("");
+  });
+
+  montar("proyeccion_confianza", el => {
+    const NOM = { alta: "Confianza alta (≥50 ventas)", media: "Confianza media (20–49)", baja: "Confianza baja (<20)" };
+    const CLS = { alta: "destacado", media: "", baja: "alerta" };
+    const it = D.predicciones.por_confianza.map(c => ({
+      etiqueta: NOM[c.nivel] || c.nivel,
+      valor: c.zips,
+      clase: CLS[c.nivel] || "",
+      nota: `ZIPs · prom. ${N.fmtDec(c.dias_prom, 1)} d`
+    }));
+    G.barrasH(el, it, { fmt: v => N.fmtInt(v) });
   });
 
   // Calibración con selector de umbral
@@ -167,8 +218,25 @@
 
   // Simulador dentro de la diapositiva
   const simEl = document.getElementById("sim-diapositiva");
-  if (simEl) g.Simulador.montar(simEl, Z);
+  if (simEl) {
+    g.Simulador.montar(simEl, Z);
 
+    // Sincronizar barra degradada al deslizar, cambiar de modo o hacer clic en botones
+    const actualizarBarra = () => {
+      const s = simEl.querySelector('input[type="range"]');
+      if (!s) return;
+      const min = parseFloat(s.min) || 0;
+      const max = parseFloat(s.max) || 100;
+      const val = parseFloat(s.value) || 0;
+      const pct = ((val - min) / (max - min)) * 100;
+      s.style.backgroundSize = `${pct}% 100%`;
+    };
+
+    simEl.addEventListener("input", actualizarBarra);
+    simEl.addEventListener("click", () => setTimeout(actualizarBarra, 10));
+    actualizarBarra();
+  }
+  
   // ---------- Landing: scroll, menú, revelado y contador ----------
   const secs = Array.from(document.querySelectorAll(".sec"));
   const links = Array.from(document.querySelectorAll("#menu a"));
